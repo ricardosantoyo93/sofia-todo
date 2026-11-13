@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDownIcon } from './assets/icons';
 import { Form } from './components/Form';
 import { TodoCard } from './components/TodoCard';

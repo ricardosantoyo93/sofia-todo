@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 
 import { todoSchema, type Todo } from '../lib/todo-schema';

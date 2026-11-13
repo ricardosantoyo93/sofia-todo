@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { z } from 'zod';
 
@@ -12,10 +14,32 @@ const storedTodosSchema = z.array(
   }),
 );
 
-function loadTodos(): Todo[] {
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  window.addEventListener('storage', listener);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener('storage', listener);
+  };
+}
+
+function getSnapshot() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    return localStorage.getItem(STORAGE_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function getServerSnapshot() {
+  return '';
+}
+
+function parseTodos(raw: string): Todo[] {
+  if (!raw) return [];
+  try {
     const result = storedTodosSchema.safeParse(JSON.parse(raw));
     return result.success ? result.data : [];
   } catch {
@@ -23,24 +47,26 @@ function loadTodos(): Todo[] {
   }
 }
 
-export function useTodos() {
-  const [todos, setTodos] = React.useState<Todo[]>(loadTodos);
+function saveTodos(todos: Todo[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+  } catch {
+    // storage unavailable or full
+  }
+  listeners.forEach((listener) => listener());
+}
 
-  React.useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    } catch {
-      // storage unavailable or full
-    }
-  }, [todos]);
+export function useTodos() {
+  const raw = React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const todos = React.useMemo(() => parseTodos(raw), [raw]);
 
   const addTodo = React.useCallback((todo: Todo) => {
-    setTodos((current) => [...current, todo]);
+    saveTodos([...parseTodos(getSnapshot()), todo]);
   }, []);
 
   const toggleTodo = React.useCallback((timestamp: Date) => {
-    setTodos((current) =>
-      current.map((todo) =>
+    saveTodos(
+      parseTodos(getSnapshot()).map((todo) =>
         todo.timestamp.getTime() === timestamp.getTime()
           ? { ...todo, completed: !todo.completed }
           : todo,

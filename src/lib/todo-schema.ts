@@ -13,6 +13,7 @@ export const todoSchema = z.object({
     .date()
     .refine((date) => date >= startOfToday(), 'Deadline cannot be in the past')
     .optional(),
+  time: z.string().optional(),
   timestamp: z.date(),
   completed: z.boolean().default(false),
 });

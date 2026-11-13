@@ -1,4 +1,5 @@
 import { cn } from 'cn';
+import { lightFormat } from 'date-fns';
 import { CalendarIcon, CheckIcon, CircleCheck, InfoIcon } from 'lucide-react';
 import { ArrowTurnDownLeftIcon } from '../assets/icons/ArrowTurnDownLeftIcon';
 import { TrashIcon } from '../assets/icons/TrashIcon';
@@ -82,7 +83,7 @@ export const TodoCard = ({ todo, onToggle, onDelete }: TodoCardProps) => {
               <InfoIcon />
             </MarkerIcon>
             <MarkerContent className={cn('text-right', todo.completed && 'line-through')}>
-              Due {todo.deadline.toLocaleDateString()}
+              Due {lightFormat(todo.deadline, todo.time ? 'MM/dd/yyyy hh:mm aaaa' : 'MM/dd/yyyy')}
             </MarkerContent>
           </Marker>
         )}

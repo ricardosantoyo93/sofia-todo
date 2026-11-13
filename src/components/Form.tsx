@@ -28,10 +28,13 @@ export const Form = ({ onSubmit }: FormProps) => {
     const data = new FormData(form);
     const deadline = String(data.get('deadline') ?? '');
 
+    const timeString = data.get('time') ? String(data.get('time')) : '00:00';
+
     const result = todoSchema.safeParse({
       title: data.get('title'),
       description: data.get('description') || undefined,
-      deadline: deadline ? new Date(`${deadline}T00:00:00`) : undefined,
+      deadline: deadline ? new Date(`${deadline}T${timeString}`) : undefined,
+      time: data.get('time') || undefined,
       timestamp: new Date(),
     });
 
@@ -53,12 +56,18 @@ export const Form = ({ onSubmit }: FormProps) => {
   return (
     <form noValidate onSubmit={handleSubmit} className="mx-auto max-w-xl lg:mr-0 lg:max-w-lg">
       <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-        <div>
+        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:col-span-2">
+          Add a new task
+        </h2>
+        <p className="text-sm leading-6 text-gray-600 dark:text-gray-400 sm:col-span-2">
+          Fill out the form below to add a new task to your to-do list.
+        </p>
+        <div className="sm:col-span-2">
           <label
             htmlFor="title"
             className="block text-sm/6 font-semibold text-gray-900 dark:text-white"
           >
-            Title
+            Title <span className="text-destructive">*</span>
           </label>
           <div className="mt-2.5">
             <Input
@@ -81,6 +90,24 @@ export const Form = ({ onSubmit }: FormProps) => {
           error={errors.deadline}
           onChange={handleDeadlineChange}
         />
+        <div>
+          <label
+            htmlFor="title"
+            className="block text-sm/6 font-semibold text-gray-900 dark:text-white"
+          >
+            Time
+          </label>
+          <div className="mt-2.5">
+            <Input
+              id="time"
+              name="time"
+              type="time"
+              aria-invalid={!!errors.time}
+              className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:appearance-none"
+            />
+            {errors.time && <p className="mt-1 text-sm text-destructive">{errors.time}</p>}
+          </div>
+        </div>
         <div className="sm:col-span-2">
           <label
             htmlFor="description"

@@ -74,5 +74,11 @@ export function useTodos() {
     );
   }, []);
 
-  return { todos, addTodo, toggleTodo };
+  const deleteTodo = React.useCallback((timestamp: Date) => {
+    saveTodos(
+      parseTodos(getSnapshot()).filter((todo) => todo.timestamp.getTime() !== timestamp.getTime()),
+    );
+  }, []);
+
+  return { todos, addTodo, toggleTodo, deleteTodo };
 }

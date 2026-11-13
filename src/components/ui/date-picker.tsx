@@ -15,6 +15,7 @@ interface DatePickerProps {
   label: string;
   placeholder?: string;
   className?: string;
+  error?: string;
   onChange?: (date: Date | undefined) => void;
 }
 
@@ -24,6 +25,7 @@ export function DatePicker({
   label,
   placeholder = 'Pick a date',
   className,
+  error,
   onChange,
 }: DatePickerProps) {
   const [date, setDate] = React.useState<Date>();
@@ -47,6 +49,7 @@ export function DatePicker({
                 type="button"
                 variant="outline"
                 data-empty={!date}
+                aria-invalid={!!error}
                 className={cn(
                   'w-full justify-between text-left font-normal data-[empty=true]:text-muted-foreground',
                   className,
@@ -61,6 +64,7 @@ export function DatePicker({
             <Calendar mode="single" selected={date} onSelect={handleSelect} defaultMonth={date} />
           </PopoverContent>
         </Popover>
+        {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
         {name && <input type="hidden" name={name} value={date ? format(date, 'yyyy-MM-dd') : ''} />}
       </div>
     </div>

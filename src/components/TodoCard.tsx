@@ -32,7 +32,9 @@ export const TodoCard = ({ todo, onToggle }: TodoCardProps) => {
       </CardHeader>
       <CardFooter className="justify-between text-sm text-muted-foreground">
         <p>Created {todo.timestamp.toLocaleString()}</p>
-        {todo.deadline && <Badge>Due {todo.deadline.toLocaleDateString()}</Badge>}
+        {todo.deadline && (
+          <Badge variant="secondary">Due {todo.deadline.toLocaleDateString()}</Badge>
+        )}
       </CardFooter>
     </Card>
   );

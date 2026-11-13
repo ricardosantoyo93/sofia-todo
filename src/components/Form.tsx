@@ -16,6 +16,12 @@ export const Form = ({ onSubmit }: FormProps) => {
   const [resetKey, setResetKey] = React.useState(0);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
+  const handleDeadlineChange = (date: Date | undefined) => {
+    const result = todoSchema.shape.deadline.safeParse(date);
+    const message = result.success ? '' : result.error.issues[0].message;
+    setErrors((current) => ({ ...current, deadline: message }));
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -72,6 +78,8 @@ export const Form = ({ onSubmit }: FormProps) => {
           name="deadline"
           label="Deadline"
           placeholder="Select a deadline"
+          error={errors.deadline}
+          onChange={handleDeadlineChange}
         />
         <div className="sm:col-span-2">
           <label

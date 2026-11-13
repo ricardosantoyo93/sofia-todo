@@ -5,6 +5,7 @@ export const todoSchema = z.object({
   description: z.string().trim().optional(),
   deadline: z.date().optional(),
   timestamp: z.date(),
+  completed: z.boolean().default(false),
 });
 
 export type Todo = z.infer<typeof todoSchema>;

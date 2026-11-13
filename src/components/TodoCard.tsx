@@ -83,7 +83,7 @@ export const TodoCard = ({ todo, onToggle, onDelete }: TodoCardProps) => {
               <InfoIcon />
             </MarkerIcon>
             <MarkerContent className={cn('text-right', todo.completed && 'line-through')}>
-              Due {lightFormat(todo.deadline, todo.time ? 'MM/dd/yyyy hh:mm aaaa' : 'MM/dd/yyyy')}
+              Due {lightFormat(todo.deadline, todo.time ? 'MM/dd/yyyy, hh:mm aaaa' : 'MM/dd/yyyy')}
             </MarkerContent>
           </Marker>
         )}

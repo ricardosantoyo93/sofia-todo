@@ -51,9 +51,10 @@ function saveTodos(todos: Todo[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
   } catch {
-    // storage unavailable or full
+    return false;
   }
   listeners.forEach((listener) => listener());
+  return true;
 }
 
 export function useTodos() {
@@ -65,7 +66,7 @@ export function useTodos() {
   }, []);
 
   const editTodo = React.useCallback((updatedTodo: Todo) => {
-    saveTodos(
+    return saveTodos(
       parseTodos(getSnapshot()).map((todo) =>
         todo.id === updatedTodo.id ? { ...todo, ...updatedTodo } : todo,
       ),

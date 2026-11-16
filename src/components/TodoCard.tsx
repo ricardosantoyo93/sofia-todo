@@ -2,6 +2,7 @@ import { cn } from 'cn';
 import { lightFormat } from 'date-fns';
 import { CalendarIcon, CheckIcon, CircleCheck, EditIcon, InfoIcon } from 'lucide-react';
 import React from 'react';
+import { z } from 'zod';
 import { ArrowTurnDownLeftIcon } from '../assets/icons/ArrowTurnDownLeftIcon';
 import { TrashIcon } from '../assets/icons/TrashIcon';
 import { todoSchema, type Todo } from '../lib/todo-schema';
@@ -24,15 +25,29 @@ interface TodoCardProps {
   todo: Todo;
   onToggle: () => void;
   onDelete: () => void;
-  onEdit: (updatedTodo: Todo) => void;
+  onEdit: (updatedTodo: Todo) => boolean;
 }
 
 export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) => {
+  const fieldId = React.useId();
+  const editSchema = todoSchema.extend({
+    deadline: z
+      .date()
+      .optional()
+      .refine(
+        (date) =>
+          date?.getTime() === todo.deadline?.getTime() ||
+          todoSchema.shape.deadline.safeParse(date).success,
+        'Deadline cannot be in the past',
+      ),
+  });
   const [editing, setEditing] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   const handleDeadlineChange = (date: Date | undefined) => {
-    const result = todoSchema.shape.deadline.safeParse(date);
+    const unchangedDay =
+      date && todo.deadline && date.toDateString() === todo.deadline.toDateString();
+    const result = editSchema.shape.deadline.safeParse(unchangedDay ? todo.deadline : date);
     const message = result.success ? '' : result.error.issues[0].message;
     setErrors((current) => ({ ...current, deadline: message }));
   };
@@ -44,28 +59,31 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
 
     const timeString = data.get('time') ? String(data.get('time')) : '00:00';
 
-    const result = todoSchema.safeParse({
+    const result = editSchema.safeParse({
       ...todo,
-      title: String(data.get('title')),
-      description: String(data.get('description')) || '',
+      title: String(data.get('title') ?? ''),
+      description: String(data.get('description') ?? '') || '',
       deadline: data.get('deadline')
         ? new Date(`${data.get('deadline')}T${timeString}`)
         : undefined,
-      time: String(data.get('time')) || undefined,
+      time: String(data.get('time') ?? '') || undefined,
     });
 
     if (!result.success) {
-      setErrors((current) => {
-        const next: Record<string, string> = {};
-        for (const issue of result.error.issues) {
-          next[String(issue.path[0])] ??= issue.message;
-        }
-        return { ...current, ...next };
-      });
+      const next: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        next[String(issue.path[0])] ??= issue.message;
+      }
+      setErrors(next);
       return;
     }
 
-    onEdit(result.data);
+    if (!onEdit(result.data)) {
+      setErrors({
+        save: 'Changes could not be saved. Please check browser storage and try again.',
+      });
+      return;
+    }
     setErrors({});
     setEditing(false);
   };
@@ -77,16 +95,20 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
           <CardTitle className="flex gap-2 items-center">
             {editing ? (
               <span className="flex flex-col">
+                <label className="sr-only" htmlFor={`${fieldId}-title`}>
+                  Title
+                </label>
                 <Input
                   aria-invalid={!!errors.title}
                   type="text"
-                  id="title"
+                  id={`${fieldId}-title`}
+                  aria-describedby={errors.title ? `${fieldId}-title-error` : undefined}
                   name="title"
                   placeholder="Title"
                   defaultValue={todo.title}
                 />
                 {errors.title && (
-                  <p id="title-error" className="mt-1 text-sm text-destructive">
+                  <p id={`${fieldId}-title-error`} className="mt-1 text-sm text-destructive">
                     {errors.title}
                   </p>
                 )}
@@ -110,7 +132,10 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
                 disabled={editing}
                 variant="outline"
                 size="icon"
-                onClick={() => setEditing(true)}
+                onClick={() => {
+                  setErrors({});
+                  setEditing(true);
+                }}
                 aria-label={`Edit "${todo.title}"`}
               >
                 <EditIcon className="size-4" />
@@ -154,12 +179,17 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
           </CardAction>
           <CardDescription className="py-2">
             {editing ? (
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="Description"
-                defaultValue={todo.description}
-              />
+              <>
+                <label className="sr-only" htmlFor={`${fieldId}-description`}>
+                  Description
+                </label>
+                <Textarea
+                  id={`${fieldId}-description`}
+                  name="description"
+                  placeholder="Description"
+                  defaultValue={todo.description}
+                />
+              </>
             ) : todo.description ? (
               todo.description
             ) : null}
@@ -191,7 +221,7 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
                 {editing ? (
                   <span className="flex gap-2">
                     <DatePicker
-                      id="deadline"
+                      id={`${fieldId}-deadline`}
                       name="deadline"
                       label="Deadline"
                       hiddenLabel
@@ -200,9 +230,12 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
                       error={errors.deadline}
                       onChange={handleDeadlineChange}
                     />
+                    <label className="sr-only" htmlFor={`${fieldId}-time`}>
+                      Time
+                    </label>
                     <Input
                       className="bg-white"
-                      id="time"
+                      id={`${fieldId}-time`}
                       name="time"
                       type="time"
                       defaultValue={todo.time}
@@ -225,6 +258,11 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
           {editing && (
             <Marker>
               <div>
+                {errors.save && (
+                  <p role="alert" className="mb-2 text-sm text-destructive">
+                    {errors.save}
+                  </p>
+                )}
                 <Button type="submit" variant="default" size="sm">
                   Save Changes
                 </Button>
@@ -232,7 +270,10 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setEditing(false)}
+                  onClick={() => {
+                    setErrors({});
+                    setEditing(false);
+                  }}
                   className="ml-2"
                 >
                   Cancel

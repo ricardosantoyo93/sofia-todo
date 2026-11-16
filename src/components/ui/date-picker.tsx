@@ -32,6 +32,8 @@ export function DatePicker({
   defaultValue,
   onChange,
 }: DatePickerProps) {
+  const generatedId = React.useId();
+  const fieldId = id ?? generatedId;
   const [date, setDate] = React.useState<Date | undefined>(defaultValue);
 
   const handleSelect = (next: Date | undefined) => {
@@ -41,21 +43,25 @@ export function DatePicker({
 
   return (
     <div>
-      {!hiddenLabel && (
-        <label htmlFor={id} className="block text-sm/6 font-semibold text-gray-900 dark:text-white">
-          {label}
-        </label>
-      )}
+      <label
+        htmlFor={fieldId}
+        className={
+          hiddenLabel ? 'sr-only' : 'block text-sm/6 font-semibold text-gray-900 dark:text-white'
+        }
+      >
+        {label}
+      </label>
       <div className={cn(!hiddenLabel && 'mt-2.5')}>
         <Popover>
           <PopoverTrigger
             render={
               <Button
-                id={id}
+                id={fieldId}
                 type="button"
                 variant="outline"
                 data-empty={!date}
                 aria-invalid={!!error}
+                aria-describedby={error ? `${fieldId}-error` : undefined}
                 className={cn(
                   'w-full justify-between text-left font-normal data-[empty=true]:text-muted-foreground',
                   className,
@@ -70,7 +76,11 @@ export function DatePicker({
             <Calendar mode="single" selected={date} onSelect={handleSelect} defaultMonth={date} />
           </PopoverContent>
         </Popover>
-        {error && <p className="mt-1 text-sm text-destructive text-nowrap">{error}</p>}
+        {error && (
+          <p id={`${fieldId}-error`} className="mt-1 text-sm text-destructive text-nowrap">
+            {error}
+          </p>
+        )}
         {name && <input type="hidden" name={name} value={date ? format(date, 'yyyy-MM-dd') : ''} />}
       </div>
     </div>

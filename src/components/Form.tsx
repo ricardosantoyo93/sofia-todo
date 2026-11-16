@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { todoSchema, type Todo } from '../lib/todo-schema';
+import { parseTodoForm, validateTodoDeadline, type Todo } from '../lib/todo-schema';
 import { Button } from './ui/button';
 import { DatePicker } from './ui/date-picker';
 import { Input } from './ui/input';
@@ -17,7 +17,7 @@ export const Form = ({ onSubmit }: FormProps) => {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   const handleDeadlineChange = (date: Date | undefined) => {
-    const result = todoSchema.shape.deadline.safeParse(date);
+    const result = validateTodoDeadline(date);
     const message = result.success ? '' : result.error.issues[0].message;
     setErrors((current) => ({ ...current, deadline: message }));
   };
@@ -26,18 +26,7 @@ export const Form = ({ onSubmit }: FormProps) => {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
-    const deadline = String(data.get('deadline') ?? '');
-
-    const timeString = data.get('time') ? String(data.get('time')) : '00:00';
-
-    const result = todoSchema.safeParse({
-      id: crypto.randomUUID(),
-      title: data.get('title'),
-      description: data.get('description') || undefined,
-      deadline: deadline ? new Date(`${deadline}T${timeString}`) : undefined,
-      time: data.get('time') || undefined,
-      timestamp: new Date(),
-    });
+    const result = parseTodoForm(data);
 
     if (!result.success) {
       const next: Record<string, string> = {};

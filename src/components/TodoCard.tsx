@@ -2,10 +2,9 @@ import { cn } from 'cn';
 import { lightFormat } from 'date-fns';
 import { CalendarIcon, CheckIcon, CircleCheck, EditIcon, InfoIcon } from 'lucide-react';
 import React from 'react';
-import { z } from 'zod';
 import { ArrowTurnDownLeftIcon } from '../assets/icons/ArrowTurnDownLeftIcon';
 import { TrashIcon } from '../assets/icons/TrashIcon';
-import { todoSchema, type Todo } from '../lib/todo-schema';
+import { parseTodoForm, validateTodoDeadline, type Todo } from '../lib/todo-schema';
 import { Button } from './ui/button';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { DatePicker } from './ui/date-picker';
@@ -30,24 +29,11 @@ interface TodoCardProps {
 
 export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) => {
   const fieldId = React.useId();
-  const editSchema = todoSchema.extend({
-    deadline: z
-      .date()
-      .optional()
-      .refine(
-        (date) =>
-          date?.getTime() === todo.deadline?.getTime() ||
-          todoSchema.shape.deadline.safeParse(date).success,
-        'Deadline cannot be in the past',
-      ),
-  });
   const [editing, setEditing] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   const handleDeadlineChange = (date: Date | undefined) => {
-    const unchangedDay =
-      date && todo.deadline && date.toDateString() === todo.deadline.toDateString();
-    const result = editSchema.shape.deadline.safeParse(unchangedDay ? todo.deadline : date);
+    const result = validateTodoDeadline(date, todo);
     const message = result.success ? '' : result.error.issues[0].message;
     setErrors((current) => ({ ...current, deadline: message }));
   };
@@ -57,17 +43,7 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
     const form = event.currentTarget;
     const data = new FormData(form);
 
-    const timeString = data.get('time') ? String(data.get('time')) : '00:00';
-
-    const result = editSchema.safeParse({
-      ...todo,
-      title: String(data.get('title') ?? ''),
-      description: String(data.get('description') ?? '') || '',
-      deadline: data.get('deadline')
-        ? new Date(`${data.get('deadline')}T${timeString}`)
-        : undefined,
-      time: String(data.get('time') ?? '') || undefined,
-    });
+    const result = parseTodoForm(data, todo);
 
     if (!result.success) {
       const next: Record<string, string> = {};

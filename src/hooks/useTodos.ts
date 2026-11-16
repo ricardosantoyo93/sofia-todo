@@ -64,6 +64,14 @@ export function useTodos() {
     saveTodos([...parseTodos(getSnapshot()), todo]);
   }, []);
 
+  const editTodo = React.useCallback((updatedTodo: Todo) => {
+    saveTodos(
+      parseTodos(getSnapshot()).map((todo) =>
+        todo.id === updatedTodo.id ? { ...todo, ...updatedTodo } : todo,
+      ),
+    );
+  }, []);
+
   const toggleTodo = React.useCallback((id: string) => {
     saveTodos(
       parseTodos(getSnapshot()).map((todo) =>
@@ -76,5 +84,5 @@ export function useTodos() {
     saveTodos(parseTodos(getSnapshot()).filter((todo) => todo.id !== id));
   }, []);
 
-  return { todos, addTodo, toggleTodo, deleteTodo };
+  return { todos, addTodo, toggleTodo, deleteTodo, editTodo };
 }

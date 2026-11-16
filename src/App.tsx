@@ -11,7 +11,7 @@ import { Separator } from './components/ui/separator';
 import { useTodos } from './hooks/useTodos';
 
 function App() {
-  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos();
+  const { todos, addTodo, toggleTodo, deleteTodo, editTodo } = useTodos();
   const completedTodos = todos.filter((todo) => todo.completed);
   const pendingTodos = todos.filter((todo) => !todo.completed);
 
@@ -34,6 +34,7 @@ function App() {
         todo={todo}
         onToggle={() => toggleTodo(todo.id)}
         onDelete={() => deleteTodo(todo.id)}
+        onEdit={(updatedTodo) => editTodo(updatedTodo)}
       />
     ));
   };

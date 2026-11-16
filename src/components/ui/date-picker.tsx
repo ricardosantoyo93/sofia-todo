@@ -13,9 +13,11 @@ interface DatePickerProps {
   id?: string;
   name?: string;
   label: string;
+  hiddenLabel?: boolean;
   placeholder?: string;
   className?: string;
   error?: string;
+  defaultValue?: Date;
   onChange?: (date: Date | undefined) => void;
 }
 
@@ -23,12 +25,14 @@ export function DatePicker({
   id,
   name,
   label,
+  hiddenLabel = false,
   placeholder = 'Pick a date',
   className,
   error,
+  defaultValue,
   onChange,
 }: DatePickerProps) {
-  const [date, setDate] = React.useState<Date>();
+  const [date, setDate] = React.useState<Date | undefined>(defaultValue);
 
   const handleSelect = (next: Date | undefined) => {
     setDate(next);
@@ -37,10 +41,12 @@ export function DatePicker({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm/6 font-semibold text-gray-900 dark:text-white">
-        {label}
-      </label>
-      <div className="mt-2.5">
+      {!hiddenLabel && (
+        <label htmlFor={id} className="block text-sm/6 font-semibold text-gray-900 dark:text-white">
+          {label}
+        </label>
+      )}
+      <div className={cn(!hiddenLabel && 'mt-2.5')}>
         <Popover>
           <PopoverTrigger
             render={
@@ -64,7 +70,7 @@ export function DatePicker({
             <Calendar mode="single" selected={date} onSelect={handleSelect} defaultMonth={date} />
           </PopoverContent>
         </Popover>
-        {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
+        {error && <p className="mt-1 text-sm text-destructive text-nowrap">{error}</p>}
         {name && <input type="hidden" name={name} value={date ? format(date, 'yyyy-MM-dd') : ''} />}
       </div>
     </div>

@@ -214,7 +214,7 @@ export const TodoCard = ({ todo, onToggle, onDelete, onEdit }: TodoCardProps) =>
                       Due{' '}
                       {lightFormat(
                         todo.deadline,
-                        todo.time ? 'dd/MM/yyyy, hh:mm aaaa' : 'MM/dd/yyyy',
+                        todo.time ? 'dd/MM/yyyy, hh:mm aaaa' : 'dd/MM/yyyy',
                       )}
                     </>
                   )

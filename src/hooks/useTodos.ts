@@ -64,20 +64,16 @@ export function useTodos() {
     saveTodos([...parseTodos(getSnapshot()), todo]);
   }, []);
 
-  const toggleTodo = React.useCallback((timestamp: Date) => {
+  const toggleTodo = React.useCallback((id: string) => {
     saveTodos(
       parseTodos(getSnapshot()).map((todo) =>
-        todo.timestamp.getTime() === timestamp.getTime()
-          ? { ...todo, completed: !todo.completed }
-          : todo,
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
       ),
     );
   }, []);
 
-  const deleteTodo = React.useCallback((timestamp: Date) => {
-    saveTodos(
-      parseTodos(getSnapshot()).filter((todo) => todo.timestamp.getTime() !== timestamp.getTime()),
-    );
+  const deleteTodo = React.useCallback((id: string) => {
+    saveTodos(parseTodos(getSnapshot()).filter((todo) => todo.id !== id));
   }, []);
 
   return { todos, addTodo, toggleTodo, deleteTodo };

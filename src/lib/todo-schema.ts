@@ -7,6 +7,7 @@ function startOfToday() {
 }
 
 export const todoSchema = z.object({
+  id: z.uuid(),
   title: z.string().trim().min(1, 'Title is required'),
   description: z.string().trim().optional(),
   deadline: z

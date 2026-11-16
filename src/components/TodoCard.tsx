@@ -74,7 +74,9 @@ export const TodoCard = ({ todo, onToggle, onDelete }: TodoCardProps) => {
             {todo.completed ? <CircleCheck className="size-4 text-green-600" /> : <CalendarIcon />}
           </MarkerIcon>
           <MarkerContent>
-            <span className="flex items-center gap-4">{todo.timestamp.toLocaleString()}</span>
+            <span className="flex items-center gap-4">
+              {lightFormat(todo.timestamp, 'MM/dd/yyyy, hh:mm aaaa')}
+            </span>
           </MarkerContent>
         </Marker>
         {todo.deadline && (

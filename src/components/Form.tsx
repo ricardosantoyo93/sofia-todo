@@ -31,6 +31,7 @@ export const Form = ({ onSubmit }: FormProps) => {
     const timeString = data.get('time') ? String(data.get('time')) : '00:00';
 
     const result = todoSchema.safeParse({
+      id: crypto.randomUUID(),
       title: data.get('title'),
       description: data.get('description') || undefined,
       deadline: deadline ? new Date(`${deadline}T${timeString}`) : undefined,
@@ -76,9 +77,14 @@ export const Form = ({ onSubmit }: FormProps) => {
               name="title"
               type="text"
               aria-invalid={!!errors.title}
+              aria-describedby="title-error"
               className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
             />
-            {errors.title && <p className="mt-1 text-sm text-destructive">{errors.title}</p>}
+            {errors.title && (
+              <p id="title-error" className="mt-1 text-sm text-destructive">
+                {errors.title}
+              </p>
+            )}
           </div>
         </div>
         <DatePicker
@@ -92,7 +98,7 @@ export const Form = ({ onSubmit }: FormProps) => {
         />
         <div>
           <label
-            htmlFor="title"
+            htmlFor="time"
             className="block text-sm/6 font-semibold text-gray-900 dark:text-white"
           >
             Time
@@ -103,9 +109,14 @@ export const Form = ({ onSubmit }: FormProps) => {
               name="time"
               type="time"
               aria-invalid={!!errors.time}
+              aria-describedby="time-error"
               className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:appearance-none"
             />
-            {errors.time && <p className="mt-1 text-sm text-destructive">{errors.time}</p>}
+            {errors.time && (
+              <p id="time-error" className="mt-1 text-sm text-destructive">
+                {errors.time}
+              </p>
+            )}
           </div>
         </div>
         <div className="sm:col-span-2">

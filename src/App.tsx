@@ -30,10 +30,10 @@ function App() {
 
     return list.map((todo) => (
       <TodoCard
-        key={todo.timestamp.getTime()}
+        key={todo.id}
         todo={todo}
-        onToggle={() => toggleTodo(todo.timestamp)}
-        onDelete={() => deleteTodo(todo.timestamp)}
+        onToggle={() => toggleTodo(todo.id)}
+        onDelete={() => deleteTodo(todo.id)}
       />
     ));
   };
